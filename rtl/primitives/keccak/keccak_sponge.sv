@@ -45,12 +45,12 @@ module keccak_sponge (
   state_t mode, return_mode; // return_mode stores where to go after PERMUTE
 
   logic [4:0] word_idx;       // 0 to 24 (lane index)
-  logic [4:0] word_x, word_y; // coordinates derived from word_idx
+  logic [2:0] word_x, word_y; // coordinates derived from word_idx (FIXED: 3-bit width)
 
   // Coordinate mapping word_idx -> (x,y)
   // Map: 0->(0,0), 1->(1,0)... 4->(4,0), 5->(0,1)...
-  assign word_x = word_idx % 5;
-  assign word_y = word_idx / 5;
+  assign word_x = 3'(word_idx % 5);
+  assign word_y = 3'(word_idx / 5);
 
   always_ff @(posedge clk or negedge rst_n)
   begin

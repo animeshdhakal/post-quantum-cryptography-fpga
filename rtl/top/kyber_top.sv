@@ -5,72 +5,114 @@ module kyber_top (
     input  logic [31:0] data_in,
     output logic [31:0] data_out,
     output logic        done
-);
+  );
 
-    // Keccak Signals
-    logic [63:0] keccak_state_in [4:0][4:0];
-    logic [63:0] keccak_state_out[4:0][4:0];
-    logic        keccak_start;
-    logic        keccak_done;
-    logic        keccak_busy;
+  // Sponge Signals
+  logic [4:0]  rate_words;
+  logic        absorb_valid;
+  logic [63:0] absorb_data;
+  logic        absorb_ready;
+  logic        absorb_last;
+  logic        squeeze_valid;
+  logic [63:0] squeeze_data;
+  logic        squeeze_ready;
+  logic        sponge_busy;
 
-    // Instantiate Keccak Core
-    keccak_f1600 u_keccak (
-        .clk(clk),
-        .rst_n(rst_n),
-        .start(keccak_start),
-        .state_in(keccak_state_in),
-        .state_out(keccak_state_out),
-        .done(keccak_done),
-        .busy(keccak_busy)
-    );
+  // Instantiate Sponge
+  keccak_sponge u_sponge (
+                  .clk(clk),
+                  .rst_n(rst_n),
+                  .rate_words(rate_words),
+                  .absorb_valid(absorb_valid),
+                  .absorb_data(absorb_data),
+                  .absorb_ready(absorb_ready),
+                  .absorb_last(absorb_last),
+                  .squeeze_valid(squeeze_valid),
+                  .squeeze_data(squeeze_data),
+                  .squeeze_ready(squeeze_ready),
+                  .busy(sponge_busy)
+                );
 
-    // Simple Control Logic
-    typedef enum logic [1:0] {IDLE, WAIT_DONE, FINISH} state_t;
-    state_t state, next_state;
+  // Hardcoded Config for Test (SHAKE128 rate = 1344 bits = 21 words)
+  assign rate_words = 5'd21;
 
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
-            state <= IDLE;
-            keccak_start <= 1'b0;
-        end else begin
-            state <= next_state;
-            keccak_start <= (state == IDLE && start);
+  // Simple State Machine for atomic test:
+  // 1. Absorb 'data_in' (padded to 64-bit)
+  // 2. Pad/Finish absorb
+  // 3. Squeeze 32-bits
+  typedef enum logic [2:0] {IDLE, ABSORB, PAD_WAIT, SQUEEZE, FINISH} state_t;
+  state_t state, next_state;
+
+  always_ff @(posedge clk or negedge rst_n)
+  begin
+    if (!rst_n)
+    begin
+      state <= IDLE;
+    end
+    else
+    begin
+      state <= next_state;
+    end
+  end
+
+  // Data Path & Control
+  always_comb
+  begin
+    next_state = state;
+    absorb_valid = 1'b0;
+    absorb_last  = 1'b0;
+    squeeze_ready = 1'b0;
+    done = 1'b0;
+
+    // Zero pad upper 32 bits
+    absorb_data = {32'd0, data_in};
+
+    case (state)
+      IDLE:
+      begin
+        if (start)
+          next_state = ABSORB;
+      end
+
+      ABSORB:
+      begin
+        if (absorb_ready)
+        begin
+          absorb_valid = 1'b1;
+          absorb_last  = 1'b1; // Trigger permute after this word
+          next_state = PAD_WAIT;
         end
-    end
+      end
 
-    // Data datapath
-    always_comb begin
-        // default
-        for(int x=0; x<5; x++)
-            for(int y=0; y<5; y++)
-                keccak_state_in[x][y] = 64'd0;
+      PAD_WAIT:
+      begin
+        // Wait for sponge to switch to squeeze state (it might permute)
+        if (squeeze_valid)
+          next_state = SQUEEZE;
+      end
 
-        // Load input data into first lane (simple test wrapper - lower 32 bits)
-        keccak_state_in[0][0] = {32'd0, data_in};
-    end
+      SQUEEZE:
+      begin
+        if (squeeze_valid)
+        begin
+          squeeze_ready = 1'b1; // Ack the read
+          next_state = FINISH;
+        end
+      end
 
-    // Read output from first lane
-    assign data_out = keccak_state_out[0][0][31:0];
+      FINISH:
+      begin
+        done = 1'b1;
+        if (!start)
+          next_state = IDLE;
+      end
 
-    // State Machine
-    always_comb begin
-        next_state = state;
-        done = 1'b0;
+      default:
+        next_state = IDLE;
+    endcase
+  end
 
-        case (state)
-            IDLE: begin
-                if (start) next_state = WAIT_DONE;
-            end
-            WAIT_DONE: begin
-                if (keccak_done) next_state = FINISH;
-            end
-            FINISH: begin
-                done = 1'b1;
-                if (!start) next_state = IDLE;
-            end
-            default: next_state = IDLE;
-        endcase
-    end
+  // Output mapping
+  assign data_out = squeeze_data[31:0];
 
 endmodule
