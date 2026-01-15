@@ -1,45 +1,39 @@
-module modular_add_sub
-import ntt_pkg:
-       :
-         *;
-  (
-    input  logic [DATA_WIDTH-1:0] a,
-    input  logic [DATA_WIDTH-1:0] b,
-    output logic [DATA_WIDTH-1:0] sum,
-    output logic [DATA_WIDTH-1:0] diff
+module modular_add_sub (
+    input  logic [15:0] a,
+    input  logic [15:0] b,
+    output logic [15:0] sum,
+    output logic [15:0] diff
   );
 
+  localparam int KYBER_Q = 3329;
+
   // Addition: (a + b) mod q
-  // Logic: res = a + b; if (res >= q) res -= q; (assuming a,b < q)
-  logic [DATA_WIDTH:0] raw_sum;
-  logic [DATA_WIDTH:0] raw_sum_minus_q;
+  logic [16:0] raw_sum;
+  logic [16:0] raw_sum_minus_q;
 
   always_comb
   begin
-    raw_sum = a + b;
-    raw_sum_minus_q = raw_sum - KYBER_Q;
+    raw_sum = {1'b0, a} + {1'b0, b};
+    // Explicit 17-bit math
+    raw_sum_minus_q = raw_sum - 17'(KYBER_Q);
 
-    if (raw_sum >= KYBER_Q)
-      sum = raw_sum_minus_q[DATA_WIDTH-1:0];
+    if (raw_sum >= 17'(KYBER_Q))
+      sum = raw_sum_minus_q[15:0];
     else
-      sum = raw_sum[DATA_WIDTH-1:0];
+      sum = raw_sum[15:0];
   end
 
   // Subtraction: (a - b) mod q
-  // Logic: res = a - b; if (res < 0) res += q;
-  // Implementation: res = a + (q - b) if a < b else a - b?
-  // Or: raw_diff = a - b; if borrow, add q.
-  logic [DATA_WIDTH:0] raw_diff;
-
   always_comb
   begin
     if (a >= b)
     begin
-      diff = a - b;
+      // Cast to 32 bits for safety then truncate
+      diff = 16'(32'(a) - 32'(b));
     end
     else
     begin
-      diff = (a + KYBER_Q) - b;
+      diff = 16'((32'(a) + 32'(KYBER_Q)) - 32'(b));
     end
   end
 
