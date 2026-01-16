@@ -358,7 +358,7 @@ class Kyber:
 
 def main():
     kyber = Kyber(hw)
-    kyber.keygen()
+    pk, sk = kyber.keygen()
 
     msg = "Hello Kyber!"
     u, v = kyber.encrypt(msg)
