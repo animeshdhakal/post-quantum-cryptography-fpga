@@ -69,10 +69,7 @@ if not os.path.exists(LIB_PATH):
 try:
     lib = ctypes.CDLL(LIB_PATH)
 except OSError:
-    print(
-        f"Error: Could not load {LIB_PATH}. Make sure to build the Verilator model first."
-    )
-    exit(1)
+    print(f"Warning: Could not load {LIB_PATH}. Running in Software-only mode.")
 
 
 # Wrapper Class

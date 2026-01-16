@@ -5,3 +5,5 @@ markdown
 django-filter
 djangorestframework-simplejwt
 drf-spectacular
+django-cors-headers
+django-redis
