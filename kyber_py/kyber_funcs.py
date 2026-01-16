@@ -54,22 +54,44 @@ class KyberNTT:
         return res
 
 
-py_ntt = KyberNTT()
-# access from project root
-LIB_PATH = os.path.abspath("sim/verilator/libkyber_sim.so")
-# Or check if running from subdir
-if not os.path.exists(LIB_PATH):
-    # Try alternate location
-    LIB_PATH = os.path.abspath("../sim/verilator/libkyber_sim.so")
+from pathlib import Path
 
-# Try obj_dir if root failed
-if not os.path.exists(LIB_PATH):
-    LIB_PATH = os.path.abspath("sim/verilator/obj_dir/libkyber_sim.so")
+py_ntt = KyberNTT()
+CURRENT_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = CURRENT_DIR.parent
+VERILATOR_DIR = PROJECT_ROOT / "sim" / "verilator"
+
+print(f"DEBUG: CURRENT_DIR = {CURRENT_DIR}")
+print(f"DEBUG: PROJECT_ROOT = {PROJECT_ROOT}")
+
+# List contents of verilator dir if possible
+if VERILATOR_DIR.is_dir():
+    print(f"DEBUG: Contents of {VERILATOR_DIR}:")
+    for item in os.listdir(VERILATOR_DIR):
+        print(f"DEBUG:   - {item}")
+else:
+    print(f"DEBUG: Verilator directory not found at {VERILATOR_DIR}")
+
+
+LIB_PATH = VERILATOR_DIR / "obj_dir" / "libkyber_sim.so"
+print(f"DEBUG: Checking LIB_PATH = {LIB_PATH}")
+
+if not LIB_PATH.exists():
+    print(f"DEBUG: {LIB_PATH} does not exist.")
+    # Fallback to direct verilator dir if obj_dir not found
+    LIB_PATH = VERILATOR_DIR / "libkyber_sim.so"
+    print(f"DEBUG: Checking Fallback LIB_PATH = {LIB_PATH}")
+
+# Convert Path object to string for ctypes
+LIB_PATH_STR = str(LIB_PATH)
 
 try:
-    lib = ctypes.CDLL(LIB_PATH)
+    lib = ctypes.CDLL(LIB_PATH_STR)
 except OSError:
-    print(f"Warning: Could not load {LIB_PATH}. Running in Software-only mode.")
+    print(
+        f"Error: Could not load {LIB_PATH}. Make sure to build the Verilator model first."
+    )
+    exit(1)
 
 
 # Wrapper Class
