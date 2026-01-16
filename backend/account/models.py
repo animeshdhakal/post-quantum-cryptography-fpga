@@ -32,7 +32,7 @@ class User(AbstractUser):
     last_login = models.DateTimeField(_('last login'), auto_now=True, null=True, blank=True)
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = []  # Username is optional (blank=True, null=True), so it shouldn't be in REQUIRED_FIELDS
 
     class Meta:
         verbose_name = _('user')

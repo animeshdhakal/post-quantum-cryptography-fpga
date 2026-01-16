@@ -145,47 +145,35 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
-
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "UTC"
-
-USE_I18N = True
-
-USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
-STATIC_URL = "static/"
-
-CORS_ALLOW_ALL_ORIGINS = True
-
-# Cache configuration
+# Redis Cache configuration
 # Uses Redis if available, gracefully falls back to in-memory cache
-# The IGNORE_EXCEPTIONS option allows the app to continue working if Redis is down
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": "redis://127.0.0.1:6379/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "IGNORE_EXCEPTIONS": True,  # Don't raise exceptions if Redis is down
-            "SOCKET_CONNECT_TIMEOUT": 2,  # Fast timeout
+            "IGNORE_EXCEPTIONS": True,
+            "SOCKET_CONNECT_TIMEOUT": 2,
             "SOCKET_TIMEOUT": 2,
         },
-        # Fallback to in-memory cache if Redis fails
         "KEY_PREFIX": "chat_cache",
     }
 }
 
-# Alternative: Use in-memory cache (uncomment if you don't want Redis)
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
-#         "LOCATION": "unique-snowflake",
-#     }
-# }
+# Channel Layers for WebSockets
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}
+
+# Internationalization
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "UTC"
+USE_I18N = True
+USE_TZ = True
+
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = "static/"
+CORS_ALLOW_ALL_ORIGINS = True

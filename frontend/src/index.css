@@ -90,67 +90,122 @@
 
 @layer base {
     :root {
-        /* 🍏 Minimal & Clean (Apple-style) */
-        --background: 0 0% 100%; /* #FFFFFF */
-        --foreground: 0 0% 0%; /* #000000 */
+        /* 💚 WhatsApp-Inspired Theme */
+        --background: 0 0% 100%;
+        /* #FFFFFF */
+        --foreground: 0 0% 9%;
+        /* #171717 */
 
         --card: 0 0% 100%;
-        --card-foreground: 0 0% 0%;
+        --card-foreground: 0 0% 9%;
 
         --popover: 0 0% 100%;
-        --popover-foreground: 0 0% 0%;
+        --popover-foreground: 0 0% 9%;
 
-        --primary: 213 100% 49%; /* #007AFF */
+        /* WhatsApp Green */
+        --primary: 142 70% 49%;
+        /* #25D366 */
         --primary-foreground: 0 0% 100%;
 
-        --secondary: 240 24% 96%; /* #F2F2F7 */
-        --secondary-foreground: 0 0% 0%;
+        /* Light Gray Background */
+        --secondary: 0 0% 96%;
+        /* #F5F5F5 */
+        --secondary-foreground: 0 0% 9%;
 
-        --muted: 240 24% 96%;
-        --muted-foreground: 215 14% 34%; /* ~#6B7280 */
+        --muted: 0 0% 96%;
+        --muted-foreground: 0 0% 45%;
+        /* #737373 */
 
-        --accent: 240 24% 96%;
-        --accent-foreground: 0 0% 0%;
+        --accent: 142 70% 49%;
+        --accent-foreground: 0 0% 100%;
 
-        --destructive: 0 84% 60%; /* ~#EF4444 */
+        --destructive: 0 84% 60%;
+        /* #EF4444 */
         --destructive-foreground: 0 0% 100%;
 
-        --border: 220 13% 91%;
-        --input: 220 13% 91%;
-        --ring: 213 100% 49%;
+        --border: 0 0% 90%;
+        /* #E5E5E5 */
+        --input: 0 0% 90%;
+        --ring: 142 70% 49%;
 
-        --radius: 0.9rem;
+        --radius: 0.5rem;
+
+        /* Custom WhatsApp Colors */
+        --whatsapp-green: 142 70% 49%;
+        /* #25D366 */
+        --whatsapp-dark-green: 168 76% 32%;
+        /* #128C7E */
+        --whatsapp-teal: 168 93% 20%;
+        /* #075E54 */
+        --whatsapp-light-green: 102 60% 90%;
+        /* #DCF8C6 */
+
+        /* Message Bubbles */
+        --message-sent: 102 60% 90%;
+        /* #DCF8C6 */
+        --message-received: 0 0% 100%;
+        /* #FFFFFF */
+
+        /* Chat Background */
+        --chat-background: 36 33% 94%;
+        /* #ECE5DD */
     }
 
     .dark {
-        /* 🎨 Modern Dark + Accent (recommended) */
-        --background: 222 47% 11%; /* #0F172A */
-        --foreground: 220 14% 90%; /* #E5E7EB */
+        /* 🌙 WhatsApp Dark Theme */
+        --background: 0 0% 7%;
+        /* #111B21 */
+        --foreground: 0 0% 88%;
+        /* #E1E1E1 */
 
-        --card: 221 39% 11%; /* #111827 */
-        --card-foreground: 220 14% 90%;
+        --card: 0 0% 10%;
+        /* #1A1A1A */
+        --card-foreground: 0 0% 88%;
 
-        --popover: 221 39% 11%;
-        --popover-foreground: 220 14% 90%;
+        --popover: 0 0% 10%;
+        --popover-foreground: 0 0% 88%;
 
-        --primary: 217 91% 60%; /* #3B82F6 (accent) */
+        /* WhatsApp Green (slightly adjusted for dark) */
+        --primary: 142 70% 45%;
+        /* #00A884 */
         --primary-foreground: 0 0% 100%;
 
-        --secondary: 221 39% 11%;
-        --secondary-foreground: 220 14% 90%;
+        /* Dark Gray */
+        --secondary: 0 0% 13%;
+        /* #202C33 */
+        --secondary-foreground: 0 0% 88%;
 
-        --muted: 217 19% 24%; /* close to #1F2937 */
-        --muted-foreground: 220 9% 64%; /* #9CA3AF */
+        --muted: 0 0% 13%;
+        --muted-foreground: 0 0% 60%;
+        /* #999999 */
 
-        --accent: 217 91% 60%;
+        --accent: 142 70% 45%;
         --accent-foreground: 0 0% 100%;
 
-        --destructive: 0 84% 60%; /* #EF4444 */
+        --destructive: 0 84% 60%;
         --destructive-foreground: 0 0% 100%;
 
-        --border: 215 28% 17%;
-        --input: 215 28% 17%;
-        --ring: 217 91% 60%;
+        --border: 0 0% 20%;
+        /* #333333 */
+        --input: 0 0% 20%;
+        --ring: 142 70% 45%;
+
+        /* Custom Dark Colors */
+        --whatsapp-green: 142 70% 45%;
+        --whatsapp-dark-green: 168 76% 28%;
+        --whatsapp-teal: 168 93% 16%;
+        --whatsapp-light-green: 142 35% 25%;
+        /* Darker green for sent messages */
+
+        /* Message Bubbles */
+        --message-sent: 142 35% 20%;
+        /* #005C4B */
+        --message-received: 0 0% 13%;
+        /* #202C33 */
+
+        /* Chat Background */
+        --chat-background: 0 0% 5%;
+        /* #0B141A */
     }
 }
 
@@ -160,8 +215,7 @@
     }
 
     body {
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial,
-            "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+        font-family: "Segoe UI", Helvetica, Arial, sans-serif;
         @apply bg-background text-foreground antialiased;
     }
 
@@ -173,15 +227,112 @@
 }
 
 @layer utilities {
+
+    /* WhatsApp-specific utilities */
+    .message-sent {
+        background-color: hsl(var(--message-sent));
+    }
+
+    .message-received {
+        background-color: hsl(var(--message-received));
+    }
+
+    .chat-background {
+        background-color: hsl(var(--chat-background));
+    }
+
+    /* Message bubble tail */
+    .message-tail-sent {
+        position: absolute;
+        right: -8px;
+        bottom: 0;
+        width: 0;
+        height: 0;
+        border-left: 8px solid hsl(var(--message-sent));
+        border-bottom: 8px solid transparent;
+    }
+
+    .message-tail-received {
+        position: absolute;
+        left: -8px;
+        bottom: 0;
+        width: 0;
+        height: 0;
+        border-right: 8px solid hsl(var(--message-received));
+        border-bottom: 8px solid transparent;
+    }
+
+    /* Smooth animations */
+    .animate-message-in {
+        animation: messageIn 0.2s ease-out;
+    }
+
+    @keyframes messageIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px) scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* Typing indicator */
+    .typing-dot {
+        animation: typingDot 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .typing-dot:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+
+    @keyframes typingDot {
+
+        0%,
+        60%,
+        100% {
+            opacity: 0.3;
+            transform: translateY(0);
+        }
+
+        30% {
+            opacity: 1;
+            transform: translateY(-4px);
+        }
+    }
+
+    /* Hover effects */
+    .hover-lift {
+        transition: transform 0.2s ease;
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Glass effect */
     .glass {
-        @apply bg-background/70 backdrop-blur-xl border border-border/60 shadow-[0_10px_30px_rgba(0,0,0,0.25)];
+        @apply bg-background/70 backdrop-blur-xl border border-border/60 shadow-lg;
     }
 
+    /* Smooth shadow */
     .soft-shadow {
-        @apply shadow-[0_8px_30px_rgba(15,23,42,0.18)];
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     }
 
-    .ring-accent {
-        @apply ring-1 ring-primary/30;
+    /* WhatsApp pattern background */
+    .whatsapp-pattern {
+        background-image:
+            repeating-linear-gradient(45deg,
+                transparent,
+                transparent 10px,
+                rgba(0, 0, 0, 0.02) 10px,
+                rgba(0, 0, 0, 0.02) 20px);
     }
 }

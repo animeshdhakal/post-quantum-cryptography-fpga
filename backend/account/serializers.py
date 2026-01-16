@@ -79,11 +79,23 @@ class RegisterSerializer(serializers.ModelSerializer):
 class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
     """Custom token serializer that uses email instead of username"""
     username_field = 'email'
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Replace 'username' field with 'email' field
+        # This ensures the serializer accepts 'email' in request data
+        if 'username' in self.fields:
+            self.fields['email'] = self.fields.pop('username')
+            self.fields['email'].required = True
+            self.fields['email'].label = 'Email'
 
     def validate(self, attrs):
         """Validate credentials and return tokens"""
-        # Use email as the username field
-        attrs['username'] = attrs.get('email')
+        # Map email to username for the parent serializer's authentication
+        # The parent serializer expects 'username' in attrs for user lookup
+        email = attrs.get('email', attrs.get('username'))
+        if email:
+            attrs['username'] = email
         data = super().validate(attrs)
         
         # Add user data to response

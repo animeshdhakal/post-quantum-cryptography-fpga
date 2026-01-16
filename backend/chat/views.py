@@ -17,6 +17,11 @@ class RoomListView(generics.ListCreateAPIView):
         room = serializer.save()
         room.participants.add(self.request.user)
 
+class RoomDetailView(generics.RetrieveAPIView):
+    serializer_class = RoomSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    queryset = Room.objects.all()
+
 class JoinRoomView(views.APIView):
     permission_classes = [permissions.IsAuthenticated]
 
