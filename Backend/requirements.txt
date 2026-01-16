@@ -1,0 +1,7 @@
+Django==6.0.1
+channels[daphne]
+djangorestframework
+markdown
+django-filter
+djangorestframework-simplejwt
+drf-spectacular
