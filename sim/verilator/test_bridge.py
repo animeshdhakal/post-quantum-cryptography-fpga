@@ -195,9 +195,9 @@ def test_ntt_hw():
         sim.sim_write(MEM_BASE + (i * 4), val)
         input_poly.append(val)
 
-    # Assert Start=1, Mode=0 (NTT)
-    # 0x01 = Start
-    sim.sim_write(REG_START, 1)
+    # Assert Start=1, Opcode=8 (Direct NTT)
+    # 8 << 1 = 16. | 1 = 17 = 0x11.
+    sim.sim_write(REG_START, 0x11)
     sim.sim_step(1)
     sim.sim_write(REG_START, 0)
 
@@ -249,12 +249,11 @@ def test_inv_ntt_hw():
         sim.sim_write(MEM_BASE + (i * 4), val)
         input_poly.append(val)
 
-    # Assert Start=1, Mode=1 (INTT)
-    # Bit 0 = Start, Bit 1 = Mode.
-    # 3 = 11b.
-    sim.sim_write(REG_START, 3)
+    # Assert Start=1, Opcode=9 (Direct INTT)
+    # 9 << 1 = 18. | 1 = 19 = 0x13.
+    sim.sim_write(REG_START, 0x13)
     sim.sim_step(1)
-    sim.sim_write(REG_START, 2)  # Start=0, Mode=1 (Keep mode hold? Or latched?)
+    sim.sim_write(REG_START, 0)
 
     t = 0
     while True:
@@ -290,9 +289,104 @@ def test_inv_ntt_hw():
         print(f"Hardware INTT FAILURE: {mismatches} mismatches")
 
 
+def test_mul_acc():
+    print("=== Testing Hardware MulAcc ===")
+    random.seed(55)
+
+    # Generate S, A, E
+    poly_s = [random.randint(0, Q - 1) for _ in range(256)]
+    poly_a = [random.randint(0, Q - 1) for _ in range(256)]
+    poly_e = [random.randint(0, Q - 1) for _ in range(256)]
+
+    # Calculate Ref
+    poly_t_ref = []
+    poly_mul_ref = []
+    for i in range(256):
+        mul = hw_mul(poly_s[i], poly_a[i])
+        poly_mul_ref.append(mul)
+        t_val = (mul + poly_e[i]) % Q
+        poly_t_ref.append(t_val)
+
+    print(f"DEBUG: Index 0 Inputs: S={poly_s[0]}, A={poly_a[0]}, E={poly_e[0]}")
+    print(f"DEBUG: Index 0 Math: Mul={poly_mul_ref[0]}, T_ref={poly_t_ref[0]}")
+
+    MEM_BASE = 0x1000
+    ADDR_S = MEM_BASE
+    ADDR_A = MEM_BASE + 0x200
+    ADDR_E = MEM_BASE + 0x400
+    ADDR_T = MEM_BASE + 0x600
+
+    # Load Memory
+    print("Loading Inputs...")
+    for i in range(128):
+        # Pack 2 coeffs into 32-bit
+        val_s = poly_s[2 * i] | (poly_s[2 * i + 1] << 16)
+        val_a = poly_a[2 * i] | (poly_a[2 * i + 1] << 16)
+        val_e = poly_e[2 * i] | (poly_e[2 * i + 1] << 16)
+
+        sim.sim_write(ADDR_S + i * 4, val_s)
+        sim.sim_write(ADDR_A + i * 4, val_a)
+        sim.sim_write(ADDR_E + i * 4, val_e)
+
+    print("Verifying Memory Load...")
+    val_s0 = sim.sim_read(ADDR_S)
+    val_a0 = sim.sim_read(ADDR_A)
+    val_e0 = sim.sim_read(ADDR_E)
+    print(
+        f"DEBUG: ReadBack Index 0: S={val_s0 & 0xFFFF}, A={val_a0 & 0xFFFF}, E={val_e0 & 0xFFFF}"
+    )
+
+    # Trigger Opcode 10
+    print("Starting MulAcc...")
+    sim.sim_write(REG_START, 0x15)
+    sim.sim_step(1)
+    sim.sim_write(REG_START, 0)
+
+    # Wait
+    t = 0
+    while True:
+        status = sim.sim_read(REG_STATUS)
+        if not (status & 0x02):
+            if t > 0:
+                break
+        sim.sim_step(1)
+        t += 1
+        if t > 2000:
+            print("Timeout MulAcc")
+            break
+
+    print(f"Done in {t} cycles")
+
+    # Read T
+    mismatches = 0
+    for i in range(128):
+        val_t = sim.sim_read(ADDR_T + i * 4)
+        t0 = val_t & 0xFFFF
+        t1 = (val_t >> 16) & 0xFFFF
+
+        if i == 0:
+            print(f"DEBUG: HW Index 0: T={t0}")
+
+        if t0 != poly_t_ref[2 * i]:
+            mismatches += 1
+            if mismatches < 5:
+                print(f"Mismatch {2 * i}: HW {t0} != Ref {poly_t_ref[2 * i]}")
+
+        if t1 != poly_t_ref[2 * i + 1]:
+            mismatches += 1
+            if mismatches < 5:
+                print(f"Mismatch {2 * i + 1}: HW {t1} != Ref {poly_t_ref[2 * i + 1]}")
+
+    if mismatches == 0:
+        print("Hardware MulAcc SUCCESS")
+    else:
+        print(f"Hardware MulAcc FAILURE: {mismatches} mismatches")
+
+
 if __name__ == "__main__":
     test_inv_ntt_ref()
     sim.sim_init()
     test_ntt_hw()
     test_inv_ntt_hw()
+    test_mul_acc()
     sim.sim_close()

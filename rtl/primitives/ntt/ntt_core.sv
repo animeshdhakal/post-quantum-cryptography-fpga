@@ -712,7 +712,7 @@ module ntt_core (
                   if (mode == 1'b0)
                   begin
                     // NTT: len decreases
-                    if (len == 2)
+                    if (len == 1)
                     begin
                       state <= DONE;
                     end

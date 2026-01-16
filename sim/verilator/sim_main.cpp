@@ -115,8 +115,16 @@ int sim_read(int addr) {
     main_time++;
 
     if (top->bus_ready) {
-      success = 1;
+      // Wait 1 cycle for data to latch into bus_rdata (2-cycle latency)
+      top->clk = 1;
+      top->eval();
+      main_time++;
+      top->clk = 0;
+      top->eval();
+      main_time++;
+
       result = top->bus_rdata;
+      success = 1;
     }
 
     top->clk = 0;
@@ -141,5 +149,30 @@ void sim_close() {
     delete top;
     top = nullptr;
   }
+}
+// Absorb Seed (External Helper)
+void absorb_seed(uint32_t *seed, int word_count) {
+  if (!top)
+    return;
+
+  // Set Rate to 21 (0x15)
+  sim_write(0x0010, 21);
+
+  for (int i = 0; i < word_count; i++) {
+    // Check if last word
+    if (i == word_count - 1) {
+      // Set Absorb Last = 1 (Bit 1 of 0x0004) -> 0x00000002
+      sim_write(0x0004, 2);
+    } else {
+      // Ensure Absorb Last = 0
+      sim_write(0x0004, 0);
+    }
+
+    // Write Data to 0x0014 (Triggers Absorb Go)
+    sim_write(0x0014, seed[i]);
+  }
+
+  // Clear Absorb Last
+  sim_write(0x0004, 0);
 }
 }
