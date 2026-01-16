@@ -9,7 +9,7 @@ LIB_NAME = libkyber_sim.so
 
 # Verilator configuration
 VERILATOR = verilator
-VERILATOR_FLAGS = --cc --exe --build -O3 --top-module $(TOP_MODULE) \
+VERILATOR_FLAGS = --cc --exe --build -O3 --trace --top-module $(TOP_MODULE) \
 				  -I$(RTL_DIR)/top -I$(RTL_DIR)/core -I$(RTL_DIR)/primitives -I$(RTL_DIR)/primitives/keccak -I$(RTL_DIR)/primitives/ntt -I$(RTL_DIR)/primitives/cbd \
 				  -CFLAGS "-fPIC" -LDFLAGS "-shared"
 

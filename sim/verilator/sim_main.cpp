@@ -1,9 +1,11 @@
 #include "Vkyber_top.h"
 #include <iostream>
 #include <verilated.h>
+#include <verilated_vcd_c.h>
 
 // Global persistent simulation instance
 static Vkyber_top *top = nullptr;
+static VerilatedVcdC *tfp = nullptr;
 static vluint64_t main_time = 0;
 
 extern "C" {
@@ -12,8 +14,22 @@ extern "C" {
 void sim_init() {
   if (top) {
     delete top;
+    top = nullptr;
   }
+  if (tfp) {
+    tfp->close();
+    delete tfp;
+    tfp = nullptr;
+  }
+
+  Verilated::traceEverOn(true);
   top = new Vkyber_top;
+  top->eval(); // Initialize signals
+
+  tfp = new VerilatedVcdC;
+  top->trace(tfp, 99);
+  tfp->open("trace.vcd");
+
   main_time = 0;
 
   // Initial Reset
@@ -21,15 +37,19 @@ void sim_init() {
   top->rst_n = 0;
   top->bus_enable = 0;
   top->eval();
+  tfp->dump(main_time);
 
   // Pulse Reset
   for (int i = 0; i < 10; i++) {
+    main_time++;
     top->clk = !top->clk;
     top->eval();
-    main_time++;
+    tfp->dump(main_time);
   }
   top->rst_n = 1;
   top->eval();
+  main_time++;
+  tfp->dump(main_time);
 }
 
 // Step Simulation Logic (Clock cycles)
@@ -41,10 +61,27 @@ void sim_step(int cycles) {
     top->clk = 1;
     top->eval();
     main_time++;
+    if (tfp)
+      tfp->dump(main_time);
 
     top->clk = 0;
     top->eval();
     main_time++;
+    if (tfp)
+      tfp->dump(main_time);
+  }
+}
+
+// Cleanup
+void sim_exit() {
+  if (tfp) {
+    tfp->close();
+    delete tfp;
+    tfp = nullptr;
+  }
+  if (top) {
+    delete top;
+    top = nullptr;
   }
 }
 
